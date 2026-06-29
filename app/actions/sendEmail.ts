@@ -11,9 +11,14 @@ interface ContactFormData {
 
 export async function sendEmail(data: ContactFormData) {
   // Check if SMTP is configured
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.error("SMTP settings are not configured");
-    return { success: false, error: "שירות המייל אינו מוגדר כראוי" };
+  const missing: string[] = [];
+  if (!process.env.SMTP_HOST) missing.push("SMTP_HOST");
+  if (!process.env.SMTP_USER) missing.push("SMTP_USER");
+  if (!process.env.SMTP_PASS) missing.push("SMTP_PASS");
+  
+  if (missing.length > 0) {
+    console.error("SMTP settings are not configured:", missing);
+    return { success: false, error: `חסרים משתני סביבה: ${missing.join(", ")}` };
   }
 
   const { name, phone, email, message } = data;
