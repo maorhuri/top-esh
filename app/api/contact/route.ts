@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 export async function POST(request: Request) {
-  // Check if API key is configured
-  if (!process.env.RESEND_API_KEY) {
-    console.error("RESEND_API_KEY is not configured");
+  // Check if SMTP is configured
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.error("SMTP settings are not configured");
     return NextResponse.json(
       { error: "שירות המייל אינו מוגדר כראוי" },
       { status: 500 }
     );
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
   try {
     const body = await request.json();
     const { name, phone, email, message } = body;
@@ -33,11 +42,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send email using Resend
-    const { data, error } = await resend.emails.send({
-      from: "טופ אש - טופס יצירת קשר <onboarding@resend.dev>", // Replace with your verified domain
-      to: ["top-esh@outlook.co.il"],
-      reply_to: email,
+    // Send email using SMTP
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: process.env.SMTP_TO || "top-esh@outlook.co.il",
+      replyTo: email,
       subject: `פנייה חדשה מאתר טופ אש - ${name}`,
       html: `
         <!DOCTYPE html>
@@ -125,16 +134,8 @@ export async function POST(request: Request) {
       `,
     });
 
-    if (error) {
-      console.error("Resend error:", error);
-      return NextResponse.json(
-        { error: "שגיאה בשליחת המייל" },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
-      { success: true, message: "ההודעה נשלחה בהצלחה", data },
+      { success: true, message: "ההודעה נשלחה בהצלחה", messageId: info.messageId },
       { status: 200 }
     );
   } catch (error) {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { siteContent } from "@/lib/content";
@@ -12,11 +13,23 @@ interface FormData {
   message: string;
 }
 
+const TEST_PASSWORD = "ezpointtest123";
+
 export default function ContactForm() {
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
     null
   );
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [testPassword, setTestPassword] = useState("");
+  const [isTestMode, setIsTestMode] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("sendtest") !== null) {
+      setShowTestModal(true);
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -54,7 +67,64 @@ export default function ContactForm() {
     }
   };
 
+  const handleTestPasswordSubmit = () => {
+    if (testPassword === TEST_PASSWORD) {
+      setIsTestMode(true);
+      setShowTestModal(false);
+      // Pre-fill form with test data
+      reset({
+        name: "בדיקת מערכת",
+        phone: "050-0000000",
+        email: "test@test.com",
+        message: "זוהי הודעת בדיקה לבדיקת מערכת שליחת המיילים.",
+      });
+    } else {
+      alert("סיסמה שגויה");
+    }
+  };
+
   return (
+    <>
+      {/* Test Mode Modal */}
+      {showTestModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">מצב בדיקה</h3>
+            <p className="text-gray-600 mb-4">הזן סיסמה כדי להפעיל מצב בדיקה:</p>
+            <input
+              type="password"
+              value={testPassword}
+              onChange={(e) => setTestPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleTestPasswordSubmit()}
+              className="w-full rounded-md border border-gray-300 px-4 py-3 text-gray-900 mb-4 focus:border-primary-red focus:outline-none focus:ring-2 focus:ring-primary-red/20"
+              placeholder="סיסמה"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleTestPasswordSubmit}
+                className="flex-1 rounded-md bg-primary-red px-4 py-2 text-white font-medium hover:bg-red-700"
+              >
+                אישור
+              </button>
+              <button
+                onClick={() => setShowTestModal(false)}
+                className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-700 font-medium hover:bg-gray-300"
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Test Mode Banner */}
+      {isTestMode && (
+        <div className="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-yellow-800 mb-6">
+          <strong>מצב בדיקה פעיל</strong> - הטופס מולא אוטומטית עם נתוני בדיקה
+        </div>
+      )}
+
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Name Field */}
       <div>
@@ -184,6 +254,7 @@ export default function ContactForm() {
         </div>
       )}
     </form>
+    </>
   );
 }
 
