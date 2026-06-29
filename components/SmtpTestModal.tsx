@@ -40,6 +40,8 @@ export default function SmtpTestModal({ isOpen, onClose }: SmtpTestModalProps) {
         phone: "050-0000000",
         email: testEmail,
         message: `זוהי הודעת בדיקה לבדיקת מערכת שליחת המיילים.\n\nנשלח בתאריך: ${new Date().toLocaleString("he-IL")}`,
+        testMode: true,
+        testRecipient: testEmail,
       });
 
       if (response.success) {

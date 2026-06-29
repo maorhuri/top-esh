@@ -1,12 +1,15 @@
 "use server";
 
 import nodemailer from "nodemailer";
+import { logEmail } from "./emailLog";
 
 interface ContactFormData {
   name: string;
   phone: string;
   email: string;
   message: string;
+  testMode?: boolean;
+  testRecipient?: string;
 }
 
 export async function sendEmail(data: ContactFormData) {
@@ -44,12 +47,17 @@ export async function sendEmail(data: ContactFormData) {
     },
   });
 
+  // In test mode, send to the test recipient instead of the default
+  const recipient = data.testMode && data.testRecipient 
+    ? data.testRecipient 
+    : (process.env.SMTP_TO || "top-esh@outlook.co.il");
+
   try {
     const info = await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: process.env.SMTP_TO || "top-esh@outlook.co.il",
+      to: recipient,
       replyTo: email,
-      subject: `פנייה חדשה מאתר טופ אש - ${name}`,
+      subject: data.testMode ? `[בדיקה] פנייה מאתר טופ אש` : `פנייה חדשה מאתר טופ אש - ${name}`,
       html: `
         <!DOCTYPE html>
         <html dir="rtl" lang="he">
@@ -136,10 +144,31 @@ export async function sendEmail(data: ContactFormData) {
       `,
     });
 
+    // Log successful email
+    await logEmail({
+      name,
+      phone,
+      email,
+      message,
+      status: "success",
+      messageId: info.messageId,
+    });
+
     return { success: true, messageId: info.messageId };
   } catch (error: unknown) {
     console.error("Error sending email:", error);
     const errorMessage = error instanceof Error ? error.message : "שגיאה לא ידועה";
+    
+    // Log failed email
+    await logEmail({
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      message: data.message,
+      status: "failed",
+      error: errorMessage,
+    });
+
     return { success: false, error: `שגיאה בשליחת המייל: ${errorMessage}` };
   }
 }
