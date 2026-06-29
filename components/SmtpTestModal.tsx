@@ -60,10 +60,11 @@ export default function SmtpTestModal({ isOpen, onClose }: SmtpTestModalProps) {
           message: data.error || "שגיאה בשליחת המייל",
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : "שגיאה לא ידועה";
       setResult({
         success: false,
-        message: "שגיאת תקשורת עם השרת",
+        message: `שגיאת תקשורת: ${errorMsg}`,
       });
     } finally {
       setIsSubmitting(false);
