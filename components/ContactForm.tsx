@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { siteContent } from "@/lib/content";
@@ -18,6 +18,7 @@ const TEST_PASSWORD = "ezpointtest123";
 
 export default function ContactForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
     null
@@ -47,10 +48,9 @@ export default function ContactForm() {
       const response = await sendEmail(data);
 
       if (response.success) {
-        setSubmitStatus("success");
         reset();
-        // Hide success message after 5 seconds
-        setTimeout(() => setSubmitStatus(null), 5000);
+        // Redirect to thank you page
+        router.push("/contact/thank-you");
       } else {
         setSubmitStatus("error");
       }
