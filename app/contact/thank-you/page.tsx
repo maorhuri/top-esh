@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import Link from "next/link";
 import { CheckCircle, Phone, ArrowRight } from "lucide-react";
 import { siteContent } from "@/lib/content";
@@ -10,6 +11,17 @@ export const metadata: Metadata = {
 
 export default function ThankYouPage() {
   return (
+    <>
+      {/* Google Ads Conversion Tracking */}
+      <Script id="google-ads-conversion" strategy="afterInteractive">
+        {`
+          gtag('event', 'conversion', {
+            'send_to': 'AW-17218925391/2tPfCKz9i8MbEM_mz5JA',
+            'value': 1.0,
+            'currency': 'ILS'
+          });
+        `}
+      </Script>
     <section className="min-h-[70vh] flex items-center justify-center py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="mx-auto max-w-2xl px-4 text-center">
         <div className="mb-8 flex justify-center">
@@ -58,5 +70,6 @@ export default function ThankYouPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }
