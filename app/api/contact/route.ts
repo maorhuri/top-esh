@@ -138,10 +138,11 @@ export async function POST(request: Request) {
       { success: true, message: "ההודעה נשלחה בהצלחה", messageId: info.messageId },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error in contact API:", error);
+    const errorMessage = error instanceof Error ? error.message : "שגיאה לא ידועה";
     return NextResponse.json(
-      { error: "אירעה שגיאה בשרת" },
+      { error: `שגיאה בשליחת המייל: ${errorMessage}` },
       { status: 500 }
     );
   }
