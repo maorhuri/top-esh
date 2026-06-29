@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import SmtpTestWrapper from "@/components/SmtpTestWrapper";
 import { siteContent } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -148,6 +150,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <main className="min-h-screen">{children}</main>
         <Footer />
         <WhatsAppButton />
+        <Suspense fallback={null}>
+          <SmtpTestWrapper />
+        </Suspense>
       </body>
     </html>
   );
