@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, X, CheckCircle, XCircle } from "lucide-react";
+import { sendEmail } from "@/app/actions/sendEmail";
 
 const TEST_PASSWORD = "ezpointtest123";
 
@@ -34,37 +35,29 @@ export default function SmtpTestModal({ isOpen, onClose }: SmtpTestModalProps) {
     setResult(null);
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: "בדיקת מערכת SMTP",
-          phone: "050-0000000",
-          email: testEmail,
-          message: `זוהי הודעת בדיקה לבדיקת מערכת שליחת המיילים.\n\nנשלח בתאריך: ${new Date().toLocaleString("he-IL")}`,
-        }),
+      const response = await sendEmail({
+        name: "בדיקת מערכת SMTP",
+        phone: "050-0000000",
+        email: testEmail,
+        message: `זוהי הודעת בדיקה לבדיקת מערכת שליחת המיילים.\n\nנשלח בתאריך: ${new Date().toLocaleString("he-IL")}`,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.success) {
         setResult({
           success: true,
-          message: `המייל נשלח בהצלחה! (ID: ${data.messageId || "N/A"})`,
+          message: `המייל נשלח בהצלחה! (ID: ${response.messageId || "N/A"})`,
         });
       } else {
         setResult({
           success: false,
-          message: data.error || "שגיאה בשליחת המייל",
+          message: response.error || "שגיאה בשליחת המייל",
         });
       }
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : "שגיאה לא ידועה";
       setResult({
         success: false,
-        message: `שגיאת תקשורת: ${errorMsg}`,
+        message: `שגיאה: ${errorMsg}`,
       });
     } finally {
       setIsSubmitting(false);

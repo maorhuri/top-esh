@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { siteContent } from "@/lib/content";
+import { sendEmail } from "@/app/actions/sendEmail";
 
 interface FormData {
   name: string;
@@ -43,15 +44,9 @@ export default function ContactForm() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await sendEmail(data);
 
-      if (response.ok) {
+      if (response.success) {
         setSubmitStatus("success");
         reset();
         // Hide success message after 5 seconds
